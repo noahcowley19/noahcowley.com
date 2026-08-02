@@ -1,0 +1,66 @@
+---
+// post page
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { cap, fmtUsd, isoDate } from '../../lib/format';
+
+// getStaticPaths tells Astro which pages to build. We return one route per
+// collection entry, using the entry id (the file name minus .md) as the
+// slug, and pass the full entry through as a prop.
+export async function getStaticPaths() {
+  const theses = await getCollection('theses');
+  return theses.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const t = entry.data;
+
+//render() compiles the entry's markdown body into a component placable in template
+const { Content } = await render(entry);
+
+// template simple
+const rows: [string, string][] = [
+  ['Ticker', t.ticker],
+  ['Company', t.company],
+  ['Published', isoDate(t.date)],
+  ['Stance', cap(t.stance)],
+  ['Price at publication', fmtUsd(t.priceAtPublication)],
+  ['Horizon', t.horizon],
+  ['Conviction', cap(t.conviction)],
+  ['Status', cap(t.status)],
+  ...(t.closedDate ? [['Closed', isoDate(t.closedDate)] as [string, string]] : []),
+  ...(t.closedPrice !== undefined
+    ? [['Closed at', fmtUsd(t.closedPrice)] as [string, string]]
+    : []),
+  ['Thesis', t.thesis],
+];
+---
+
+<Base title={`${t.ticker} — ${t.company}`} description={t.thesis} ogType="article">
+  <article>
+    <header class="thesis-header">
+      <h1 class="ticker">{t.ticker}</h1>
+      <p class="company">{t.company}</p>
+    </header>
+
+    <section class="meta" aria-label="Thesis details">
+      <dl>
+        {
+          rows.map(([label, value]) => (
+            <div class="row">
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
