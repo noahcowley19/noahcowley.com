@@ -1,0 +1,36 @@
+---
+//a reverse-chronological table of contents of every thesis
+//a row per post date, stance, ticker, company, quick thesis
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { cap, isoDate } from '../lib/format';
+
+const theses = (await getCollection('theses')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+---
+
+<Base title="Noah Cowley">
+  <h1 class="page-title">Theses</h1>
+
+  <ul class="toc">
+    {
+      theses.map((entry) => (
+        <li class="toc-row">
+          <p class="toc-meta">
+            <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
+            <span class="toc-stance">{cap(entry.data.stance)}</span>
+          </p>
+          <div class="toc-main">
+            <a class="quiet-link" href={`/theses/${entry.id}`}>
+              <span class="toc-ticker">{entry.data.ticker}</span>
+              <span class="toc-company">{entry.data.company}</span>
+            </a>
+            <p class="toc-thesis">{entry.data.thesis}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
