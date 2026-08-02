@@ -1,0 +1,102 @@
+---
+// records
+// logic in src/lib/record.ts
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { asOf, benchmarkName, buildRows, summarize } from '../lib/record';
+import { cap, DASH, fmtPct, fmtPp, fmtUsd } from '../lib/format';
+
+const rows = buildRows(await getCollection('theses'));
+const stats = summarize(rows);
+---
+
+<Base
+  title="Record"
+  description={`Track record of every published thesis, priced as of ${asOf}.`}
+>
+  <h1 class="page-title">Record</h1>
+
+  {/* asOf up top and unmissable: nothing on this page is live. */}
+  <p class="record-asof">
+    All prices as of <strong>{asOf}</strong> - updated by hand, nothing on
+    this page is live.
+  </p>
+
+  <dl class="record-stats">
+    <div class="stat">
+      <dt>Calls</dt>
+      <dd>{stats.total}</dd>
+    </div>
+    <div class="stat">
+      <dt>Open</dt>
+      <dd>{stats.open}</dd>
+    </div>
+    <div class="stat">
+      <dt>Closed</dt>
+      <dd>{stats.closed}</dd>
+    </div>
+    <div class="stat">
+      <dt>Broken</dt>
+      <dd>{stats.broken}</dd>
+    </div>
+    <div class="stat">
+      <dt>Hit rate</dt>
+      <dd>{stats.scored > 0 ? `${stats.hits}/${stats.scored}` : DASH}</dd>
+    </div>
+    <div class="stat">
+      <dt>Avg vs {benchmarkName}</dt>
+      <dd>{fmtPp(stats.avgExcessPp)}</dd>
+    </div>
+  </dl>
+
+  {/* The one element allowed to break the prose column; on narrow screens
+      the wrapper scrolls horizontally instead of squeezing the table */}
+  <div class="record-wide">
+    <table class="record-table">
+      <thead>
+        <tr>
+          <th scope="col">Ticker</th>
+          <th scope="col">Published</th>
+          <th scope="col">Stance</th>
+          <th scope="col" class="num">Pub. price</th>
+          <th scope="col" class="num">Price</th>
+          <th scope="col" class="num">Return</th>
+          <th scope="col" class="num">{benchmarkName}</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr>
+              <td>
+                <a class="quiet-link" href={`/theses/${r.slug}`}>{r.ticker}</a>
+              </td>
+              <td>{r.published}</td>
+              <td>{cap(r.stance)}</td>
+              <td class="num">{fmtUsd(r.priceAtPublication)}</td>
+              <td class="num">{fmtUsd(r.endPrice)}</td>
+              <td class="num">{fmtPct(r.securityReturn)}</td>
+              <td class="num">{fmtPct(r.benchmarkReturn)}</td>
+              <td>{cap(r.status)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="record-notes">
+    <p>
+      Price is the {asOf} close for open theses and the closing price for
+      closed ones; each row's return and its {benchmarkName} return cover
+      the same window. A dash means the data isn't in prices.json.
+    </p>
+    <p>
+      Hit rate: a long is succeeds when it beat {benchmarkName} over its
+      window, a short when it trailed. Passes are recorded but not
+      scored. Avg vs {benchmarkName} is stance-adjusted excess return, as a
+      percentage.
+    </p>
+  </div>
+</Base>
