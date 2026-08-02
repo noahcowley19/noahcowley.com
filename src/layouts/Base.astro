@@ -1,0 +1,64 @@
+---
+//general layout
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Open Graph type: posts pass "article", everything else defaults to
+   *  "website" */
+  ogType?: 'website' | 'article';
+}
+
+const { title, description, ogType = 'website' } = Astro.props;
+const siteTitle = 'Noah Cowley';
+const fullTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
+
+// abs URL from `site` in astro.config.mjs —
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+//marking page for layout
+const path = Astro.url.pathname;
+const current = (href: string) =>
+  path === href || path === `${href}/` ? 'page' : undefined;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+
+    {/* Open Graph — a text site, so no og:image. */}
+    <meta property="og:title" content={fullTitle} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta name="twitter:card" content="summary" />
+
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={siteTitle}
+      href={new URL('rss.xml', Astro.site)}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="site-header">
+        <nav class="site-nav" aria-label="Site">
+          <a class="site-name quiet-link" href="/" aria-current={current('/')}>{siteTitle}</a>
+          <a class="quiet-link" href="/record" aria-current={current('/record')}>Record</a>
+          <a class="quiet-link" href="/about" aria-current={current('/about')}>About</a>
+        </nav>
+      </header>
+      <main class="site-main" id="main">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
