@@ -1,6 +1,10 @@
-import Base from '../layouts/Base.astro';
 ---
-
+import fs from 'node:fs';
+import Base from '../layouts/Base.astro';
+//check if photo exists
+const hasPhoto = fs.existsSync(new URL('../../public/images/about.jpg', 
+import.meta.url).pathname);
+---
 <Base
   title="About"
   description="Who writes this, what it is, and what it is not."
