@@ -1,0 +1,5 @@
+# Cloudflare Pages response headers.
+# Font files are content-hashed by nobody but they change essentially
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
