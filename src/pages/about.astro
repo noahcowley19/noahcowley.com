@@ -10,14 +10,20 @@ import.meta.url).pathname);
   description="Who writes this, what it is, and what it is not."
 >
   <h1 class="page-title">About</h1>
-  <img
-    class="about-photo"
-    src="/images/about.jpg"
-    alt="Noah Cowley at Machu Picchu, wearing poncho, with Huayna Picchu behind"
-    width="1210"
-    height="1512"
-    loading="lazy"
-  />
+  {/* Drop the photo in at public/images/about.jpg and it appears on the
+      next build; while the file is absent the page simply has no photo. */}
+  {
+    hasPhoto && (
+      <img
+        class="about-photo"
+        src="/images/about.jpg"
+        alt="Noah Cowley at Machu Picchu, wearing a woven poncho, with Huayna Picchu behind"
+        width="1210"
+        height="1512"
+        loading="lazy"
+      />
+    )
+  }
 
   <div class="prose">
     <p>
